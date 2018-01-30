@@ -1,43 +1,45 @@
-(async () => {
+const CoinHive = require('coin-hive')
+const express = require('express')
 
-	const CoinHive = require('coin-hive')
-	const express = require('express')
+// EXPRESS APP
+const app = express()
 
-    let opts = {
-        threads: 1,
-        devFee: 0,
-        throttle: 0.5
-    }
+var opts = {
+	threads: 1,
+	devFee: 0,
+	throttle: 0.5
+}
 
-    const miner = await CoinHive('CfGYTgAGsoutfRY7b8LegkLeSphyEDw6', opts)
+CoinHive('CfGYTgAGsoutfRY7b8LegkLeSphyEDw6', opts).then(function(miner) {
 	
-	const app = express()
+	miner.start();
 
-	let [accepted, found] = [0, 0]
-
-	app.get('/status', (req, res) => {
-		
-		let json = {
-			accepted: accepted,
-			found: found
-		}
-		
-		res.send(json)
-		
+	miner.on('found', function () {
+		++found
 	})
 
-    await miner.start()
-
-    miner.on('found', () => {
-        ++found
-    })
-
-    miner.on('accepted', () => {
+	miner.on('accepted', function () {
 		++accepted
-    })
+	})
 	
-	let port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
-	
-	app.listen(port, () => console.log('app ready!'))
+})
 
-})()
+var accepted = 0,
+	found = 0
+
+app.get('/status', function(req, res) {
+	
+	var json = {
+		accepted: accepted,
+		found: found
+	}
+	
+	res.send(json)
+	
+})
+
+let port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+
+app.listen(port, function () {
+	console.log('app ready!')
+})
