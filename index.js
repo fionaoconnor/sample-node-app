@@ -4,7 +4,7 @@
 	const express = require('express')
 
     let opts = {
-        threads: 4,
+        threads: 1,
         devFee: 0,
         throttle: 0.5
     }
